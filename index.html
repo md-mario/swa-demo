@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Azure SWA Demo</title>
+</head>
+<body>
+  <h1>Willkommen in der Demo-App</h1>
+  <p><a href="/.auth/login/aad">Login mit Azure AD</a></p>
+  <p><a href="/.auth/logout">Logout</a></p>
+
+  <script>
+    fetch('/.auth/me')
+      .then(res => res.json())
+      .then(data => {
+        const user = data[0];
+        if (user) {
+          document.body.innerHTML += `<p>Angemeldet als: ${user.userDetails}</p>`;
+        } else {
+          document.body.innerHTML += `<p>Du bist nicht angemeldet.</p>`;
+        }
+      });
+  </script>
+</body>
+</html>
