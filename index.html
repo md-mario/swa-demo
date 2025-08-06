@@ -2,12 +2,23 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Azure Static Web App mit Entra ID Login</title>
+  <title>Azure SWA mit Entra ID</title>
   <style>
     body { font-family: sans-serif; padding: 2rem; }
     .info { margin-top: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; }
     .ok { background-color: #e8fbe8; }
     .warn { background-color: #fbe8e8; }
+    pre {
+      background-color: #f4f4f4;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    details summary {
+      cursor: pointer;
+      margin-top: 2rem;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -23,30 +34,40 @@
     Lade Login-Status...
   </div>
 
+  <details id="debug-auth">
+    <summary>🛠️ Auth-Response Debug (.auth/me)</summary>
+    <pre id="auth-raw">Wird geladen…</pre>
+  </details>
+
   <script>
     async function checkAuthStatus() {
+      const infoBox = document.getElementById('user-info');
+      const debugBox = document.getElementById('auth-raw');
+
       try {
         const res = await fetch('/.auth/me', { credentials: 'include' });
         const data = await res.json();
 
-        const container = document.getElementById('user-info');
+        // Debug-Block anzeigen
+        debugBox.textContent = JSON.stringify(data, null, 2);
 
+        // Benutzerinfo verarbeiten
         if (Array.isArray(data) && data.length > 0 && data[0].clientPrincipal) {
           const user = data[0].clientPrincipal;
-          container.classList.remove('warn');
-          container.classList.add('ok');
-          container.innerHTML = `
+          infoBox.classList.remove('warn');
+          infoBox.classList.add('ok');
+          infoBox.innerHTML = `
             <p>✅ <strong>Angemeldet als:</strong> ${user.userDetails}</p>
-            <p><strong>Identity Provider:</strong> ${user.identityProvider}</p>
+            <p><strong>Provider:</strong> ${user.identityProvider}</p>
             <p><strong>Rollen:</strong> ${user.userRoles.join(', ')}</p>
           `;
         } else {
-          container.innerHTML = `<p>⚠️ Du bist nicht angemeldet.</p>`;
+          infoBox.innerHTML = `<p>⚠️ Du bist nicht angemeldet.</p>`;
         }
       } catch (error) {
         console.error('Fehler beim Auth-Check:', error);
-        document.getElementById('user-info').innerHTML =
-          `<p>❌ Fehler beim Überprüfen des Login-Status.</p>`;
+        infoBox.innerHTML = `<p>❌ Fehler beim Abrufen des Login-Status.</p>`;
+        debugBox.textContent = `Fehler: ${error.message}`;
       }
     }
 
