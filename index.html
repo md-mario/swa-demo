@@ -1,20 +1,57 @@
 <!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><title>SWA AAD Demo</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Azure Static Web App mit Entra ID Login</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .info { margin-top: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    .ok { background-color: #e8fbe8; }
+    .warn { background-color: #fbe8e8; }
+  </style>
+</head>
 <body>
-  <h1>Azure SWA • AAD Single-Tenant Login Demo</h1>
-  <p><a href="/login">Login mit Azure AD</a> | <a href="/.auth/logout">Logout</a></p>
-  <div id="user-info"></div>
+
+  <h1>🛡️ Azure SWA mit Entra ID</h1>
+
+  <p>
+    <a href="/login">🔐 Login mit Azure AD</a> |
+    <a href="/.auth/logout">🚪 Logout</a>
+  </p>
+
+  <div id="user-info" class="info warn">
+    Lade Login-Status...
+  </div>
+
   <script>
-    fetch('/.auth/me')
-      .then(res => res.json())
-      .then(data => {
-        const user = data[0];
+    async function checkAuthStatus() {
+      try {
+        const res = await fetch('/.auth/me', { credentials: 'include' });
+        const data = await res.json();
+
+        const container = document.getElementById('user-info');
+
+        if (Array.isArray(data) && data.length > 0 && data[0].clientPrincipal) {
+          const user = data[0].clientPrincipal;
+          container.classList.remove('warn');
+          container.classList.add('ok');
+          container.innerHTML = `
+            <p>✅ <strong>Angemeldet als:</strong> ${user.userDetails}</p>
+            <p><strong>Identity Provider:</strong> ${user.identityProvider}</p>
+            <p><strong>Rollen:</strong> ${user.userRoles.join(', ')}</p>
+          `;
+        } else {
+          container.innerHTML = `<p>⚠️ Du bist nicht angemeldet.</p>`;
+        }
+      } catch (error) {
+        console.error('Fehler beim Auth-Check:', error);
         document.getElementById('user-info').innerHTML =
-          user
-            ? `<p>Angemeldet als: ${user.userDetails} (${user.identityProvider})</p>`
-            : `<p>Du bist nicht angemeldet.</p>`;
-      });
+          `<p>❌ Fehler beim Überprüfen des Login-Status.</p>`;
+      }
+    }
+
+    checkAuthStatus();
   </script>
+
 </body>
 </html>
