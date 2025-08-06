@@ -4,7 +4,7 @@
       "azureActiveDirectory": {
         "registration": {
           "openIdIssuer": "https://login.microsoftonline.com/<DEINE-TENANT-ID>",
-          "clientId": "<DEINE-CLIENT-ID>"
+          "clientId": "01495e81-1d37-4b47-ad5e-55701ee7b47c"
         }
       }
     }
